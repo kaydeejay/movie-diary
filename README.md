@@ -10,6 +10,7 @@ In order to build this application, we will need the following already installed
 - NPM
 - Nodemon (I have it installed globally; can be installed as a dev dependency on a per-project basis)
 - MongoDB
+- Mongoose CLI (Installation instructions below)
 
 ## Let's Get Started!
 
@@ -56,3 +57,28 @@ In your terminal window, type Ctrl+C to shut down the server.
 `NPX` comes bundled with NPM, but unlike NPM, it downloads *and* runs the package.
 Express-Generator is an executable NPM package that generates a boilerplate express server for you. At this stage, all it does is create a server that runs on localhost:3000, and serves a success message. Later on we will add some things to our server, like the connection to our mongo database. 
 --no-view: Express-generator has built-in functionality to add templating engines to your server, like EJS, Handlebars, or Pug (among others). We won't be needing a templating engine since we are going to use React, so the --no-view flag lets express generator know that it can do a little less.
+
+Before moving on to the database, let's add a "watch" script to `package.json`:
+```
+"scripts": {
+  "start": "node ./bin/www",
+  "watch": "nodemon ./bin/www"
+}
+```
+This will allow you to run the server using nodemon by entering `npm run watch` into the terminal. Nodemon will listen for changes saved to the server, so you don't have to kill & re-run it every time you need to make a change. 
+
+## Generate Database and Models
+
+We're going to use `Mongoose-cli` to generate our database models. You can read all about Mongoose-cli [here](https://github.com/codesmith-admin/mongoose-model-cli). 
+
+If you don't have it installed, do so via npm (here we are doing it globally):
+```
+npm install -g mongoose-model-cli
+mongoose help
+```
+These two commands will install mongoose-cli globally and show successful installation.
+
+We can then generate a `movie` model, with fields for information we will get from the Open Movie Database.
+```
+mongoose generate model movie title:string release:date poster:string directors:string writers:string cast:string link:string seen:boolean
+```
