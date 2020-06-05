@@ -159,7 +159,9 @@ Or, we could add a script to `package.json`, and then run it with npm.
   "seed": "node models/seed/seedfile.js"
 }
 ```
-```npm run seed```
+```
+npm run seed
+```
 
 To make sure it worked, you can run mongo in your terminal and enter the following:
 ```
@@ -167,4 +169,93 @@ use <database name>
 db.movies.find()
 ```
 
-And you should see the result you seeded. Now let's connect this database to our server, build a controller to manipulate our data, add some api routes so that we can do that via the browser, and test it all with postman.
+And you should see the result you seeded. Now let's:
+- connect this database to our server
+- build a controller to manipulate our data
+- add some api routes so that we can do that via the browser
+- test it all with postman.
+
+## Connect Database to the Server:
+
+In `app.js`, let's make a few changes.
+```
+var express = require('express');
+var path = require('path');
+var cookieParser = require('cookie-parser');
+var logger = require('morgan');
+
+// add this line:
+var mongoose = require('mongoose');
+
+/*
+* change these routers. Currently they should look like this:
+*/
+var indexRouter = require('./routes/index');
+var usersRouter = require('./routes/users');
+
+// let's delete those and instead say:
+var apiRouter = require('./routes/apiRoutes');
+/*
+* We will need to make more changes below in order for this to work properly.
+*/
+
+var app = express();
+
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Add this if you plan to deploy:
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static('client/build'));
+}
+
+/*
+* As we did above, let's also change these so that it instead points to the apiRoutes.js file that we will create. Currently it looks like this:
+*/
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+
+// change it to look like this:
+app.use('/api', apiRouter);
+
+/*
+* And then add this line to get the server ready for React:
+*/
+app.get("*", function(req, res) {
+  res.sendFile(path.join(__dirname, './client/build/index.html'));
+});
+
+/*
+* And finally, a few lines to make the mongoDB connection:
+*/
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost/movieDiary', {
+  useNewUrlParser: true,
+  useFindAndModify: false,
+  useUnifiedTopology: true
+});
+
+mongoose.connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
+
+module.exports = app;
+```
+
+If you don't plan on deploying, your `mongoose.connect` be simplified to this:
+```
+mongoose.connect('mongodb://localhost/movieDiary', {
+  useNewUrlParser: true,
+  useFindAndModify: false,
+  useUnifiedTopology: true
+});
+```
+
+## Database Controllers & API Routes
+
+In keeping with the changes to the routers that we just made above, let's delete `routes/users.js` and rename `routes/index.js` to `routes/apiRoutes.js`. In the terminal, at root directory:
+```
+rm routes/users.js && mv routes/index.js routes/apiRoutes.js
+```
+
+And then let's make some changes to `apiRoutes.js`. 
