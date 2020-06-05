@@ -16,10 +16,14 @@ In order to build this application, we will need the following already installed
 ## Let's Get Started!
 
 Open a terminal window, make a new directory called movie-diary', and `cd` into it.
-```mkdir movie-diary && cd movie-diary```
+```
+mkdir movie-diary && cd movie-diary
+```
 
 You are now at your application's 'root' level. If you type the command `pwd` into your terminal, you will see something like:
-```~/movie-diary```
+```
+~/movie-diary
+```
 
 I will refer to this location as 'the app's root directory' from here on out.
 
@@ -34,18 +38,25 @@ The first command will create a readme file, and the second will ensure that you
 ## Spin up an Express Server
 
 In the app's root directory, run the following command:
-
-```npx express-generator --no-view```
+```
+npx express-generator --no-view
+```
 
 If you have anything already in the directory (like a readme), you will have to confirm that you want to run the generator (y/n). Select 'y'.
 After the generator has run, enter this npm command in your terminal to install dependencies:
-```npm install```
+```
+npm install
+```
 
 Add another dependency:
-```npm install mongoose --save```
+```
+npm install mongoose --save
+```
 
 And then run the application by entering this command into your terminal to make sure everything installed properly:
-```DEBUG=movie-diary:* npm start```
+```
+DEBUG=movie-diary:* npm start
+```
 
 Now, if you open a browser window and enter 'http://localhost:3000' into the url bar, you should see the following:
 
@@ -156,4 +167,4 @@ use <database name>
 db.movies.find()
 ```
 
-And you should see the result you seeded. Now let's add some api routes so that we can do that via the browser, and test with postman.
+And you should see the result you seeded. Now let's connect this database to our server, build a controller to manipulate our data, add some api routes so that we can do that via the browser, and test it all with postman.
