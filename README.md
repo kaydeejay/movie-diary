@@ -258,4 +258,7 @@ In keeping with the changes to the routers that we just made above, let's delete
 rm routes/users.js && mv routes/index.js routes/apiRoutes.js
 ```
 
-And then let's make some changes to `apiRoutes.js`. 
+We're going to add a bunch of routes to `apiRoutes.js` that will allow us to perform CRUD (create, read, update, delete) functions on the database. First, though, we are going to build a controller that the router will use to perform these functions. So, in the terminal, at root directory, let's make our controller.
+```
+mkdir models/controllers && touch models/controllers/movieController.js
+```
