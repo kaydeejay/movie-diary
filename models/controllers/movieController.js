@@ -39,33 +39,28 @@ module.exports = {
     });
   },
 
-  // switch "posts" to "movies"!
-
   findById: async (req, res) => {
-    await Post.findOne({ _id: req.params.id }, (err, post) => {
+    await Movie.findOne({ _id: req.params.id }, (err, movie) => {
       if (err) {
         return res.status(400).json({ success: false, error: err });
       }
-      if (!post) {
-        return res.status(404).json({ success: false, error: 'Post not found!' });
+      if (!movie) {
+        return res.status(404).json({ success: false, error: 'Movie not found' });
       }
-      return res.status(200).json({ success: true, data: post });
+      return res.status(200).json({ success: true, data: movie });
     })
       .catch(err => console.log(err));
   },
   // ======== UPDATE: ========
-  updatePost: async (req, res) => {
+  updateMovie: async (req, res) => {
     const body = req.body
     if (!body) {
-      return res.status(400).json({ success: false, error: "You must provide a post to update" });
+      return res.status(400).json({ success: false, error: "You must provide a movie to update" });
     }
-    await Post.findOneAndUpdate(
+    await Movie.findOneAndUpdate(
       { _id: body._id },
       {
-        postType: body.postType,
-        title: body.title,
-        body: body.body,
-        responses: body.responses,
+        seen: body.seen,
         updatedAt: Date.now()
       },
       // passing { new: true } assures that the function will return
@@ -78,7 +73,7 @@ module.exports = {
   },
   // ======== DELETE ========
   deleteById: async (req, res) => {
-    await Post.findByIdAndDelete(
+    await Movie.findByIdAndDelete(
       { _id: req.params.id },
     )
       .then(result => res.json({ success: true, deleted: result.title }));
