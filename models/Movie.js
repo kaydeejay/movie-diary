@@ -1,6 +1,6 @@
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
-var connectionString = require('./connection-string');
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+const connectionString = require('./connection-string');
 
 if (mongoose.connection.readyState === 0) {
   mongoose.connect(connectionString, {
@@ -10,7 +10,7 @@ if (mongoose.connection.readyState === 0) {
 }
 
 
-var newSchema = new Schema({
+const newSchema = new Schema({
   
   'title': { type: String },
   'release': { type: Date },

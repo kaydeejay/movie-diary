@@ -1,9 +1,20 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
+const movieController = require('../models/controllers/movieController');
 
 /* root directory: /api/ */
-router.get('/', function(req, res, next) {
-  res.json({ success: true, message: 'success!' });
-});
+
+// ======== CREATE ========
+router.post('movies/new', movieController.addMovie);
+
+// ======== READ ========
+router.get('/movies', movieController.findAll);
+router.get('/movies/:id', movieController.findById);
+
+// ======== UPDATE ========
+router.put('/movies/update', movieController.updateMovie);
+
+// ======== DELETE ========
+router.put('/movies/delete/:id', movieController.deleteById);
 
 module.exports = router;
