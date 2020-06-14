@@ -13,12 +13,14 @@ const App = () => {
 
   useEffect(() => {
     API.getMovies().then((res) => {
+      console.log(res.data.data);
+      const { title, poster, directors, cast, writers } = res.data.data[0];
       setMovie({
-        title: res.data.title,
-        poster: res.data.poster,
-        directors: res.data.directors,
-        cast: res.data.cast,
-        writers: res.data.writers,
+        title,
+        poster,
+        directors,
+        cast,
+        writers,
       });
     });
   }, []);
@@ -27,10 +29,11 @@ const App = () => {
     <div>
       <MovieListItem
         title={movie.title}
-        poster={movie.title}
+        poster={movie.poster}
         directors={movie.directors}
         cast={movie.cast}
         writers={movie.writers}
+        seen={movie.seen}
       />
     </div>
   );

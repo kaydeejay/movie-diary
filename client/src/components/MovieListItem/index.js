@@ -1,6 +1,12 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 const MovieListItem = (props) => {
+  const [seen, setSeen] = useState(false);
+
+  useEffect(() => {
+    setSeen(props.seen);
+  });
+
   return (
     <div>
       <h3>{props.title}</h3>
