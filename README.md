@@ -50,7 +50,16 @@ npm install
 
 Add a couple more dependencies:
 ```
-npm install axios mongoose --save
+npm install axios mongoose concurrently if-env dotenv --save
+```
+
+In `bin/www`, change the following line: 
+```
+var port = normalizePort(process.env.PORT || '3000');
+```
+To make the port `3001` instead. This will help us later when we add our React application.
+```
+var port = normalizePort(process.env.PORT || '3001');
 ```
 
 And then run the application by entering this command into your terminal to make sure everything installed properly:
@@ -58,7 +67,7 @@ And then run the application by entering this command into your terminal to make
 DEBUG=movie-diary:* npm start
 ```
 
-Now, if you open a browser window and enter 'http://localhost:3000' into the url bar, you should see the following:
+Now, if you open a browser window and enter 'http://localhost:3001' into the url bar, you should see the following:
 
 ![Express Success Message](https://raw.githubusercontent.com/kaydeejay/movie-diary/master/public/images/express-success.png)
 
@@ -67,11 +76,12 @@ In your terminal window, type Ctrl+C to shut down the server.
 ### What did we just do?
 
 `NPX` comes bundled with NPM, but unlike NPM, it downloads *and* runs the package.
-Express-Generator is an executable NPM package that generates a boilerplate express server for you. At this stage, all it does is create a server that runs on localhost:3000, and serves a success message. Later on we will add some things to our server, like the connection to our mongo database. 
+Express-Generator is an executable NPM package that generates a boilerplate express server for you. At this stage, all it does is create a server that runs on localhost:3001, and serves a success message. Later on we will add some things to our server, like the connection to our mongo database. 
 --no-view: Express-generator has built-in functionality to add templating engines to your server, like EJS, Handlebars, or Pug (among others). We won't be needing a templating engine since we are going to use React, so the --no-view flag lets express generator know that it can do a little less.
 
-Before moving on to the database, let's add a "watch" script to `package.json`:
+Before moving on to the database, let's make some changes to `package.json` to specify our app's main entry point, and a "watch" script:
 ```
+"main": "./bin/www",
 "scripts": {
   "start": "node ./bin/www",
   "watch": "nodemon ./bin/www"
@@ -391,12 +401,7 @@ Try using postman to add another entry, retrieve an entry by ID or all entries, 
 
 Many external API's, including open movie database, require a unique key in order to use their services. This allows the service to limit the amount of data that one user can request through their servers, since data transfers come with a cost. When creating an application, you need a way to use your unique key without keeping it anywhere the user can access it, because if someone gets a hold of your key, they can exhaust your limits, or run up a huge bill for you if you're using a paid API service. This means we'll need to use environment variables to store your api key at the backend. 
 
-At your app's route directory, enter the following command to install the `dotenv` package via npm.
-```
-npm install dotenv --save
-```
-
-And add the following line to `app.js` (I put it in the very first line):
+Add the following line to `app.js` (I put it in the very first line):
 ```
 require('dotenv').config();
 ```
@@ -451,7 +456,7 @@ router.get('/', (req, res) => {
 module.exports = router;
 ```
 
-Now, if your server is running, if you make a get request via postman (or just enter `localhost:3000/search` into your browser's url bar), you should see your api key returned.
+Now, if your server is running, if you make a get request via postman (or just enter `localhost:3001/search` into your browser's url bar), you should see your api key returned.
 
 Of course, we don't want to return your api key to the user, so let's change that route to the following. Note that we are changing the `get` route to a `put` route:
 ```
@@ -471,7 +476,7 @@ router.put('/', (req, res) => {
 module.exports = router;
 ```
 
-Test this route in postman by sending a `put` request to `localhost:3000/search`, with the following request body:
+Test this route in postman by sending a `put` request to `localhost:3001/search`, with the following request body:
 ```
 {
   "url": "https://www.omdbapi.com/?apikey=",
@@ -481,9 +486,168 @@ Test this route in postman by sending a `put` request to `localhost:3000/search`
 
 You should get back some data related to the movie "The Princess Bride".
 
-### What the heck did we just do?
+### What did we just do?
 
 We just played a little data ping-pong with ourselves and the open movie database. Because we don't want to reveal our secret api key, we had to make the api call to the open movie database from the backend. So we made a special route on our backend that:
 1. Builds a string, which is a url including our secret api key and our search parameters
 2. Uses the axios package to send that request to the omdb api
-3. Receives the data back from the database, extracts the relevant chunk of data, and returns it.
+3. Receives the data back from the database, extracts the relevant chunk of data, and:
+4. Will return it to our front-end.
+So, front-end to our back-end to omdb to our back-end to our front-end.
+
+This completes our backend, so now it's time to get into some React!
+
+## Create a React App
+
+In the terminal, at the app's root directory, enter the following command:
+```
+npx create-react-app client
+```
+
+This will take a minute or two to complete, but will create a react application called 'client'.
+
+As advised in the terminal window, you can test some of these pre-built react scripts by moving into the `client` directory with `cd` and running `npm start`. This will open a new browser window and you'll see the spinning react logo. 
+
+Inside of `client`, you'll notice we have another `package.json` file that react built for us. Let's make one change to this file. Right after `"private": true,` and before `"dependencies": {`, let's add a proxy: 
+```
+"proxy": "http://localhost:3001",
+```
+
+This will help us to run our server and the react application at the same time, so we don't have to run two servers in two separate terminal windows.
+
+Back in the original (root-level) `package.json`, we have a bunch more scripts to add. When we're done the scripts object will look like this:
+```
+"scripts": {
+  "start": "if-env NODE_ENV=production && npm run start:prod || npm run start:dev",
+  "start:prod": "node ./bin/www",
+  "start:dev": "concurrently \"nodemon --ignore 'client/*'\" \"npm run client\"",
+  "client": "cd client && npm run start",
+  "install": "cd client && npm install",
+  "build": "cd client && npm run build",
+  "heroku-postbuild": "npm run build",
+  "watch": "nodemon ./bin/www",
+  "seed": "node ./models/seed/seedfile.js"
+}
+```
+
+Now if we run `npm run start:dev` in the terminal, we will get the local, development version of our application. Both react and nodemon will reset the application when we make changes, so we still won't have to kill and re-run our server in order to save changes we make.
+
+Let's clean up some of the react files we won't need: 
+```
+cd client/src
+rm App.test.js logo.svg serviceWorker.js setupTests.js 
+```
+
+Inside of `client/src/index.js`, delete the lines relevant to the serviceworker so that the file looks like this:
+```
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+
+```
+
+## Front-End API Util
+
+Similar to our movieController on the back end, let's make a javascript file that exports a list of CRUD functions, so that our front-end can make requests on the API/Database. In a terminal at the app's root directory:
+```
+mkdir client/src/utils
+cd client/src/utils && touch API.js
+```
+
+Let's open our new file API.js and add the following:
+```
+import axios from 'axios';
+
+export default {
+  // save a new movie (create):
+  saveMovie: (movie) => {
+    return axios.post('/api/movies/new', movie);
+  },
+  // get all movies (read):
+  getMovies: () => {
+    return axios.get('/api/movies');
+  },
+  // get movie by id:
+  getMovieById: (id) => {
+    return axios.get('/api/movies/' + id);
+  },
+  // update movie (update):
+  updateMovie: (movie) => {
+    return axios.put('/api/movies/update', movie);
+  },
+  // delete movie (delete):
+  deleteMovie: (id) => {
+    return axios.delete('/api/movies/delete/' + id);
+  },
+  // search for new movies on omdb:
+  omdbSearch: (body) => {
+    return axios.put('/search', body);
+  }
+}
+```
+
+## Building React Components
+
+`App.js` is the 'main' file of our application, and it will call all of our other components. A component will render whatever JSX is inside the `return`. Test this out by deleting all of the default content within the `return` statement, and placing a single `<h1>` tag inside. When you run `npm start:dev`, you should see your h1 tag rendered in the browser.
+```
+import React from 'react';
+import './App.css';
+
+function App() {
+  return (
+    <h1>Hello, React!</h1>
+  );
+}
+
+export default App;
+
+```
+
+It's important to note that the function can only return a single JSX element. If you need more than one element, like a h1 tag and a p tag, for instance, you have to wrap them inside of a single component, like a div.
+```
+<div>
+  <h1>Hello, React!</h1>
+  <p>More components on the way</p>
+</div>
+```
+
+Let's take a quick step back and make sure our API util works properly. Edit the `App.js` component to the following:
+```
+import React, { useEffect } from 'react';
+import API from './utils/API';
+
+const App = () => {
+  
+  useEffect(() => {
+    API.getMovies()
+    .then(res => console.log(res.data));
+  })
+
+  return (
+    <div>
+      <h1>Check the console ---></h1>
+    </div>
+  )
+}
+
+export default App;
+```
+
+There's a bit to unpack here. `useEffect` is a 'hook' built into react that we will use to tell our application when to fetch data from our API. Upon loading the application, the App component calls the API util to fetch all of our movies from our database, and then logs them to the console. Assuming you don't get any errors, this shows that the API util is hooked up properly.
+
+Now we can start building our other components. There are several ways to do this, but I prefer each component to be a subdirectory which contains the jsx file (index.js) and the css for that file. This allows us to write css with regular syntax, instead of having to change it to make it jsx-compatible.
+
+Let's make our first component, which will be a list of movies. In a terminal window at the app's root directory:
+```
+mkdir client/src/components
+mkdir client/src/components/MovieList
+cd client/src/components/MovieList && touch index.js style.css
+```
