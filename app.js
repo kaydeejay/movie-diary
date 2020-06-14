@@ -1,9 +1,12 @@
+require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const mongoose = require('mongoose');
 
+const searchRouter = require('./routes/searchRoutes');
 const apiRouter = require('./routes/apiRoutes');
 
 const app = express();
@@ -18,6 +21,7 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static('client/build'));
 }
 
+app.use('/search', searchRouter);
 app.use('/api', apiRouter);
 
 app.get('*', function(req, res) {

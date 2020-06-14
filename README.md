@@ -48,9 +48,9 @@ After the generator has run, enter this npm command in your terminal to install 
 npm install
 ```
 
-Add another dependency:
+Add a couple more dependencies:
 ```
-npm install mongoose --save
+npm install axios mongoose --save
 ```
 
 And then run the application by entering this command into your terminal to make sure everything installed properly:
@@ -386,3 +386,104 @@ router.put('/movies/delete/:id', movieController.deleteById);
 ```
 
 Try using postman to add another entry, retrieve an entry by ID or all entries, edit whether it's been 'seen', and delete it.
+
+## OMDB Search Route
+
+Many external API's, including open movie database, require a unique key in order to use their services. This allows the service to limit the amount of data that one user can request through their servers, since data transfers come with a cost. When creating an application, you need a way to use your unique key without keeping it anywhere the user can access it, because if someone gets a hold of your key, they can exhaust your limits, or run up a huge bill for you if you're using a paid API service. This means we'll need to use environment variables to store your api key at the backend. 
+
+At your app's route directory, enter the following command to install the `dotenv` package via npm.
+```
+npm install dotenv --save
+```
+
+And add the following line to `app.js` (I put it in the very first line):
+```
+require('dotenv').config();
+```
+
+Next, you'll need to register for an api key on (omdbapi.com)[https://www.omdbapi.com].
+
+Once you have your key, create a new file at your app's root directory called `.env`.
+```
+touch .env
+```
+Add this file to .gitignore - *very important.*
+
+.gitignore should now look like this:
+```
+node_modules/
+.env
+```
+
+Open `.env` and add the following:
+```
+OMDB_KEY=[your unique key]
+```
+
+This will create a variable called `OMDB_KEY`, which you can access anywhere on your backend by entering `process.env.OMDB_KEY`.
+
+Now let's build the route to search the open movie database using your unique key.
+
+At your app's route directory, enter the following command to make a new `routes` file:
+```
+touch routes/searchRoutes.js
+```
+
+In `app.js`, add the following line right before `var apiRouter = require('./routes/apiRoutes');`
+```
+var searchRouter = require('./routes/searchRoutes')
+```
+
+And, in `app.js`, add the following line right before `app.use('/api', apiRouter);`:
+```
+app.use('/search', searchRouter);
+```
+
+Now, to make sure our environment variables are working, open `searchRoutes.js` and insert the following:
+```
+const express = require('express');
+const router = express.Router();
+
+router.get('/', (req, res) => {
+  res.json({ success: true, omdbKey: process.env.OMDB_KEY });
+});
+
+module.exports = router;
+```
+
+Now, if your server is running, if you make a get request via postman (or just enter `localhost:3000/search` into your browser's url bar), you should see your api key returned.
+
+Of course, we don't want to return your api key to the user, so let's change that route to the following. Note that we are changing the `get` route to a `put` route:
+```
+const express = require('express');
+const router = express.Router();
+const axios = require('axios');
+
+router.put('/', (req, res) => {
+  const { url, search } = req.body;
+  axios.get(url + process.env.OMDB_KEY + search)
+    .then(result => {
+      res.json(result.data);
+    })
+    .catch(err => console.log(err));
+});
+
+module.exports = router;
+```
+
+Test this route in postman by sending a `put` request to `localhost:3000/search`, with the following request body:
+```
+{
+  "url": "https://www.omdbapi.com/?apikey=",
+  "search": "&t=the+princess+bride"
+}
+```
+
+You should get back some data related to the movie "The Princess Bride".
+
+### What the heck did we just do?
+
+We just played a little data ping-pong with ourselves and the open movie database. Because we don't want to reveal our secret api key, we had to make the api call to the open movie database from the backend. So we made a special route on our backend that:
+1. Builds a string, which is a url including our secret api key and our search parameters
+2. Uses the axios package to send that request to the omdb api
+3. Receives the data back from the database, extracts the relevant chunk of data, and returns it.
