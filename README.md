@@ -645,9 +645,9 @@ There's a bit to unpack here. `useEffect` is a 'hook' built into react that we w
 
 Now we can start building our other components. There are several ways to do this, but I prefer each component to be a subdirectory which contains the jsx file (index.js) and the css for that file. This allows us to write css with regular syntax, instead of having to change it to make it jsx-compatible.
 
-Let's make our first component, which will be a list of movies. In a terminal window at the app's root directory:
+Let's make our first component, which will be a list item that will display the information for a single movie. In a terminal window at the app's root directory:
 ```
 mkdir client/src/components
-mkdir client/src/components/MovieList
-cd client/src/components/MovieList && touch index.js style.css
+mkdir client/src/components/MovieListItem
+cd client/src/components/MovieListItem && touch index.js style.css
 ```
