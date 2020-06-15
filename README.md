@@ -674,60 +674,64 @@ It's important to note that the function can only return a single JSX element. I
 </div>
 ```
 
-Let's take a quick step back and make sure our API util works properly. Edit the `App.js` component to the following:
+The idea here is that we are going to make a series of components that do the following:
 
-```
-import React, { useEffect } from 'react';
-import API from './utils/API';
+1. `App.js` will call all of the movies from the database, and will render two lists: one for movies that have been seen, and one for movies that have not been seen.
+2. A component that will act as a list for movie list-item components. `App.js` will render this list twice as described above.
+3. A component that arranges the movie details in a nice-looking card. The movie list component will render one for each movie in its list.
+4. A search form, which will make a search (through our back-end) to open movie database. This will then render another list of movies for the search results.
+5. A selection of buttons that will save movies, delete movies, and toggle whether they are 'seen'.
 
-const App = () => {
+So let's start at the top and work our way down.
 
-  useEffect(() => {
-    API.getMovies()
-    .then(res => console.log(res.data));
-  })
+There are several ways make a component and style it, but I prefer each component to be a subdirectory which contains the jsx file (index.js) and the css for that file. This allows us to write css with regular syntax, instead of having to change it to make it jsx-compatible.
 
-  return (
-    <div>
-      <h1>Check the console ---></h1>
-    </div>
-  )
-}
+Let's make our first component, which will be the "MovieList".
 
-export default App;
-```
-
-There's a bit to unpack here. `useEffect` is a 'hook' built into react that we will use to tell our application when to fetch data from our API. Upon loading the application, the App component calls the API util to fetch all of our movies from our database, and then logs them to the console. Assuming you don't get any errors, this shows that the API util is hooked up properly.
-
-Now we can start building our other components. There are several ways to do this, but I prefer each component to be a subdirectory which contains the jsx file (index.js) and the css for that file. This allows us to write css with regular syntax, instead of having to change it to make it jsx-compatible.
-
-Let's make our first component, which will be a list item that will display the information for a single movie. In a terminal window at the app's root directory:
+In a terminal window at root directory:
 
 ```
 mkdir client/src/components
+mkdir client/src/components/MovieList
+cd client/src/components/MovieList && touch index.js style.css
+```
+
+Open up MovieList/index.js and add the following:
+
+```
+import React from "react";
+import MovieListItem from "../MovieListItem";
+
+const MovieList = () => {
+  return (
+    <div>
+      <MovieListItem />
+    </div>
+  );
+};
+
+export default MovieList;
+
+```
+
+Currently this movie list only imports and renders a movie list item, which doesn't exist yet, so let's make it. At root directory:
+
+```
 mkdir client/src/components/MovieListItem
 cd client/src/components/MovieListItem && touch index.js style.css
 ```
 
-Now, inside `client/src/components/MovieListItem/index.js`:
+And then, in `MovieListItem/index.js`:
 
 ```
 import React from "react";
 
-const MovieListItem = (props) => {
-  return (
-    <div>
-      <h3>{props.title}</h3>
-      <img src={props.poster} alt="" />
-      <p>Directed By: {props.directors}</p>
-      <p>Starring: {props.cast}</p>
-      <p>Written By: {props.writers}</p>
-    </div>
-  );
+const MovieListItem = () => {
+  return <p>Hello, MovieListItem</p>;
 };
 
 export default MovieListItem;
 
 ```
 
-This will create an element that takes in all of the movie data as props, and renders them as a re-usable div. We can generate as many as there are movies in our database.
+Now if you run the app, you should just see the `<p>` tag we placed inside MovieListItem. This shows that the render chain is working properly. Let's go back up to `App.js`, and we'll import the front-end API functions to start rendering movies.

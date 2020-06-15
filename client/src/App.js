@@ -1,40 +1,20 @@
 import React, { useState, useEffect } from "react";
 import API from "./utils/API";
-import MovieListItem from "./components/MovieListItem";
+import MovieList from "./components/MovieList";
 
 const App = () => {
-  const [movie, setMovie] = useState({
-    title: "",
-    poster: "",
-    directors: "",
-    cast: "",
-    writers: "",
-  });
+  const [movieList, setMovieList] = useState([]);
 
   useEffect(() => {
     API.getMovies().then((res) => {
       console.log(res.data.data);
-      const { title, poster, directors, cast, writers } = res.data.data[0];
-      setMovie({
-        title,
-        poster,
-        directors,
-        cast,
-        writers,
-      });
+      setMovieList(res.data.data);
     });
   }, []);
 
   return (
     <div>
-      <MovieListItem
-        title={movie.title}
-        poster={movie.poster}
-        directors={movie.directors}
-        cast={movie.cast}
-        writers={movie.writers}
-        seen={movie.seen}
-      />
+      <MovieList />
     </div>
   );
 };
